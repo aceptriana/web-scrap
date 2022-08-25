@@ -11,12 +11,14 @@ const tables = [
 
 const path = require("path");
 const fs = require("fs");
-const log_path = path.join(__dirname, "log.txt");
-fs.rmSync(log_path, {
+
+// fungsi logger
+const path_log = path.join(__dirname, "log.txt");
+fs.rmSync(path_log, {
   force: true,
   recursive: true,
 });
-const logger = fs.createWriteStream(log_path, { flags: "w" });
+const logger = fs.createWriteStream(path_log, { flags: "w" });
 
 const axios = require("axios");
 const http = require("http");
@@ -38,25 +40,28 @@ const html_to_cheerio = (html_string) => {
 (async () => {
   // START !!
 
-  // get html
   try {
+    // get html
     const html = await GetHTML(target);
+    // buat format cheerio
     const $ = html_to_cheerio(html);
 
-    // kumpulin semua data di beberapa tables
+    // kumpulin semua data di beberapa tables disini
     let result = [];
 
-    let o = 0;
+    let o = 0; // index
     let finish = false;
     while (!finish) {
-      const table_selector = tables[o];
+      const table_selector = tables[o]; // index of tables
+      // baca semua row di table ini
       $(table_selector).each((i, b) => {
+        const nama = String($(b).find("td:nth-child(2)").text()).trim();
+        const jurusan = String($(b).find("td:nth-child(3)").text()).trim();
         const keterangan = String($(b).find("td:nth-child(5)").text()).trim();
-        const nama = $(b).find("td:nth-child(2)").text();
-        const jurusan = $(b).find("td:nth-child(3)").text();
         if (keterangan === "LULUS" && jurusan === "Sistem Informasi") {
+          // for build output json
           result.push({ nama, jurusan, keterangan });
-          // log di txt
+          // for log di txt
           logger.write(`${nama}|${jurusan}|${keterangan}\n`);
         }
       });
@@ -66,27 +71,29 @@ const html_to_cheerio = (html_string) => {
       o++;
     }
 
+    // no urut
     result = result.map((v, i) => {
+      // bikin meta baru, no
       v.no = i + 1;
       return v;
     });
 
     // log versi JSON
-    const log_json = "log.json";
-    fs.rmSync(log_json, {
+    const path_json = "log.json";
+    fs.rmSync(path_json, {
       force: true,
       recursive: true,
     });
-    fs.writeFileSync(log_json, JSON.stringify(result, null, 2));
+    fs.writeFileSync(path_json, JSON.stringify(result, null, 2));
 
     // END !!
     console.log("Finish...");
   } catch (error) {
     const isAxiosError = error?.response?.data?.message;
     const message = isAxiosError ? error.response.data.message : error.message;
-    return {
+    console.log({
       code: isAxiosError ? error.response.status : 500,
       message,
-    };
+    });
   }
 })();
