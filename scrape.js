@@ -58,7 +58,10 @@ const html_to_cheerio = (html_string) => {
         const nama = String($(b).find("td:nth-child(2)").text()).trim();
         const jurusan = String($(b).find("td:nth-child(3)").text()).trim();
         const keterangan = String($(b).find("td:nth-child(5)").text()).trim();
-        if (keterangan === "LULUS" && jurusan === "Sistem Informasi") {
+        if (
+          keterangan === "LULUS" &&
+          ["Sistem Informasi", "Teknik Informatika"].includes(jurusan)
+        ) {
           // for build output json
           result.push({ nama, jurusan, keterangan });
           // for log di txt
