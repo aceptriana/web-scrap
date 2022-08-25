@@ -1,5 +1,5 @@
 {
-  "name": "web-scrape",
+  "name": "scraping-web-universitas",
   "version": "1.0.0",
   "main": "scrape.js",
   "license": "MIT",
